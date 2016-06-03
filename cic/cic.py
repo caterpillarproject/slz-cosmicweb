@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from __future__ import division, print_function
 import math
 import numpy as np
@@ -7,48 +9,42 @@ import random
 
 # width of simulation box
 BOXWIDTH = 25.0 # Mpc
-
 # number of cells
 NDIM = 15
 CELLWIDTH = BOXWIDTH / NDIM
-
 MPART = 1.9891e33 * 0.18 * 8.72e6
-
-SPACE = 3 # spatial dimensions
+# spatial dimensions
+SPACE = 3
 NDIMS = (NDIM,) * SPACE
+# number of particles
+NPART = 512
 
 def cic(points, ndims):
     """A basic cloud-in-cell algorithm for arbitrary spacial dimensions.
     
     Parameters
     ----------
-    points : list of points
+    points : iterable of points
     ndims : number of cells, per side"""
     # spatial dimentions
+    space = len(ndims)
     points = np.array(points, copy=False)
     ndims = np.array(ndims, copy=False)
-    space = len(ndims)
     assert space == points.shape[1]
     assert (points <= ndims).all()
-    # number density field
+    # Initialize number density field
     ndensity = np.zeros(ndims + 2)
 
     for p in points:
-#        print(p)
         # Find the cell nearest to p
         cell = np.array(np.floor(p - 0.5) + 1, dtype=int)
-#        print(cell)
         # Displacement of p to its nearest and farthest cells
-        delta = np.array((0.5 + cell - p, 0.5 - cell + p)).T
-#        print(delta)
+        delta = np.array((0.5 + cell - p, 0.5 - cell + p))
         # Split the particle into 2**space pieces
-        numbers = np.prod([i for i in itertools.product(*delta)],axis=1).reshape((2,)*space)
-#        print(numbers, numbers.sum())
+        numbers = np.prod([i for i in itertools.product(*delta.T)], axis=1).reshape((2,)*space)
         # Add the pieces to overall number density
-#        print(ndensity[cell[0]:cell[0]+2,cell[1]:cell[1]+2,cell[2]:cell[2]+2])
         for dcell in itertools.product(range(2), repeat=space):
-            ndensity[tuple(cell+dcell)] += numbers[dcell]
-#        print(ndensity[cell[0]:cell[0]+2,cell[1]:cell[1]+2,cell[2]:cell[2]+2])
+            ndensity[tuple(cell + dcell)] += numbers[dcell]
     return ndensity
 
 def cloud_in_cell(points, boxwidths, ndims, mpart):
@@ -78,8 +74,7 @@ def plot_density(density, points=None):
     plt.show()
 
 if __name__ == "__main__":
-    points = np.random.random_sample((512,SPACE)) * NDIM
+    points = np.random.random_sample((NPART,SPACE)) * NDIM
     density = cic(points, NDIMS)
-    plotting=np.mean(density**2,axis=2)
-    plot_density_overlay(density, points)
+    plot_density(density, points)
 
