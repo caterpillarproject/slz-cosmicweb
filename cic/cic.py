@@ -20,7 +20,7 @@ NDIMS = (NDIM,) * SPACE
 NPART = 512
 
 def cic(points, ndims):
-    """A basic cloud-in-cell algorithm for arbitrary spacial dimensions.
+    """A basic cloud-in-cell algorithm for arbitrary spatial dimensions.
     
     Parameters
     ----------
@@ -69,8 +69,8 @@ def plot_density(density, points=None):
         plot_points = points.T + 1
         plt.plot(plot_points[0], plot_points[1], "ro")
     xlim, ylim = image_array_2d_mesh.shape
-    plt.xlim(1,xlim - 2)
-    plt.ylim(1,ylim - 2)
+    plt.xlim(1,xlim - 1)
+    plt.ylim(1,ylim - 1)
     plt.show()
 
 if __name__ == "__main__":
