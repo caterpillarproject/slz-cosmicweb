@@ -1,0 +1,85 @@
+from __future__ import division, print_function
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+import itertools
+import random
+
+# width of simulation box
+BOXWIDTH = 25.0 # Mpc
+
+# number of cells
+NDIM = 15
+CELLWIDTH = BOXWIDTH / NDIM
+
+MPART = 1.9891e33 * 0.18 * 8.72e6
+
+SPACE = 3 # spatial dimensions
+NDIMS = (NDIM,) * SPACE
+
+def cic(points, ndims):
+    """A basic cloud-in-cell algorithm for arbitrary spacial dimensions.
+    
+    Parameters
+    ----------
+    points : list of points
+    ndims : number of cells, per side"""
+    # spatial dimentions
+    points = np.array(points, copy=False)
+    ndims = np.array(ndims, copy=False)
+    space = len(ndims)
+    assert space == points.shape[1]
+    assert (points <= ndims).all()
+    # number density field
+    ndensity = np.zeros(ndims + 2)
+
+    for p in points:
+#        print(p)
+        # Find the cell nearest to p
+        cell = np.array(np.floor(p - 0.5) + 1, dtype=int)
+#        print(cell)
+        # Displacement of p to its nearest and farthest cells
+        delta = np.array((0.5 + cell - p, 0.5 - cell + p)).T
+#        print(delta)
+        # Split the particle into 2**space pieces
+        numbers = np.prod([i for i in itertools.product(*delta)],axis=1).reshape((2,)*space)
+#        print(numbers, numbers.sum())
+        # Add the pieces to overall number density
+#        print(ndensity[cell[0]:cell[0]+2,cell[1]:cell[1]+2,cell[2]:cell[2]+2])
+        for dcell in itertools.product(range(2), repeat=space):
+            ndensity[tuple(cell+dcell)] += numbers[dcell]
+#        print(ndensity[cell[0]:cell[0]+2,cell[1]:cell[1]+2,cell[2]:cell[2]+2])
+    return ndensity
+
+def cloud_in_cell(points, boxwidths, ndims, mpart):
+    cellwidth = boxwidths / ndims
+    return cic(points/cellwidth, ndims) * mpart / cellwidth ** 3
+
+def normalize_density(density, mass_scale, length_scale):
+    return density * mass_scale / length_scale ** 3
+
+def plot_density(density, points=None):
+    if density.ndim > 2:
+        image_array_2d_mesh = np.mean(density**2, axis=2)
+    elif density.ndim == 2:
+        image_array_2d_mesh = density**2
+    else:
+        raise ValueError("2D or above density only")
+    plt.figure()
+    plt.pcolor(image_array_2d_mesh.T, cmap=plt.cm.jet)
+    if points != None:
+        assert points.shape[1] == density.ndim
+        plt.colorbar()
+        plot_points = points.T + 1
+        plt.plot(plot_points[0], plot_points[1], "ro")
+    xlim, ylim = image_array_2d_mesh.shape
+    plt.xlim(1,xlim - 2)
+    plt.ylim(1,ylim - 2)
+    plt.show()
+
+if __name__ == "__main__":
+    points = np.random.random_sample((512,SPACE)) * NDIM
+    density = cic(points, NDIMS)
+    plotting=np.mean(density**2,axis=2)
+    plot_density_overlay(density, points)
+
