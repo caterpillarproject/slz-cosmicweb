@@ -56,9 +56,9 @@ def normalize_density(density, mass_scale, length_scale):
 
 def plot_density(density, points=None):
     if density.ndim > 2:
-        image_array_2d_mesh = np.mean(density**2, axis=2)
+        image_array_2d_mesh = np.sum(density, axis=2)
     elif density.ndim == 2:
-        image_array_2d_mesh = density**2
+        image_array_2d_mesh = density
     else:
         raise ValueError("2D or above density only")
     plt.figure()
