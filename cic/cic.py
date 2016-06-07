@@ -5,19 +5,29 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
-import random
+import readsnapshots.readsnapHDF5 as rs
 
-# width of simulation box
+# Width of simulation box
 BOXWIDTH = 25.0 # Mpc
-# number of cells
-NDIM = 15
+# Number of cells
+NDIM = 512
 CELLWIDTH = BOXWIDTH / NDIM
-MPART = 1.9891e33 * 0.18 * 8.72e6
-# spatial dimensions
+# Spatial dimensions
 SPACE = 3
+BOXWIDTHS = np.array((BOXWIDTH,) * SPACE)
 NDIMS = (NDIM,) * SPACE
-# number of particles
+# Unit conversions
+MPCTOCM = 3.08567758e24
+SOLTOGRAM = 1.9891e33
+# Baryonic density
+OMEGAB = 0.18
+# Particle mass
+MPART = OMEGAB * 8.72e6 * SOLTOGRAM
+# Number of particles for random data generation
 NPART = 512
+
+# File location
+SNAPPREFIX = "/home/slz/Dropbox (MIT)/urop/2016-c/data/parent/snapdir_127/snap_127"
 
 def cic(points, ndims):
     """A basic cloud-in-cell algorithm for arbitrary spatial dimensions.
@@ -47,12 +57,13 @@ def cic(points, ndims):
             ndensity[tuple(cell + dcell)] += numbers[dcell]
     return ndensity
 
-def cloud_in_cell(points, boxwidths, ndims, mpart):
-    cellwidth = boxwidths / ndims
-    return cic(points/cellwidth, ndims) * mpart / cellwidth ** 3
+def normalize_position(points, boxwidths, ndims):
+    cellwidths = boxwidths / ndims
+    points /= cellwidths
 
-def normalize_density(density, mass_scale, length_scale):
-    return density * mass_scale / length_scale ** 3
+def normalize_density(density, cellwidths, mpart):
+    assert density.ndim == len(cellwidths)
+    density /= mpart / np.prod(cellwidths)
 
 def plot_density(density, points=None):
     if density.ndim > 2:
@@ -63,9 +74,9 @@ def plot_density(density, points=None):
         raise ValueError("2D or above density only")
     plt.figure()
     plt.pcolor(image_array_2d_mesh.T, cmap=plt.cm.jet)
+    plt.colorbar()
     if points != None:
         assert points.shape[1] == density.ndim
-        plt.colorbar()
         plot_points = points.T + 1
         plt.plot(plot_points[0], plot_points[1], "ro")
     xlim, ylim = image_array_2d_mesh.shape
@@ -73,8 +84,18 @@ def plot_density(density, points=None):
     plt.ylim(1,ylim - 1)
     plt.show()
 
-if __name__ == "__main__":
+def random_data_demo():
     points = np.random.random_sample((NPART,SPACE)) * NDIM
     density = cic(points, NDIMS)
     plot_density(density, points)
+
+if __name__ == "__main__":
+    positions = rs.read_block(SNAPPREFIX, "POS ", parttype=1)
+    space = positions.shape[1]
+    boxwidths = np.array((math.ceil(positions.max()),) * space)
+    ndims = (NDIM,) * space
+    normalize_position(positions, boxwidths, ndims)
+    density = cic(positions, ndims)
+    normalize_density(density, boxwidths/ndims, MPART)
+    plot_density(density)
 
