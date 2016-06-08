@@ -59,7 +59,7 @@ def cic(points, ndims):
 
 def normalize_position(points, boxwidths, ndims):
     cellwidths = boxwidths / ndims
-    points /= cellwidths
+    return points / cellwidths
 
 def normalize_density(density, cellwidths, mpart):
     assert density.ndim == len(cellwidths)
@@ -89,13 +89,22 @@ def random_data_demo():
     density = cic(points, NDIMS)
     plot_density(density, points)
 
-if __name__ == "__main__":
+def read_position_data():
     positions = rs.read_block(SNAPPREFIX, "POS ", parttype=1)
-    space = positions.shape[1]
-    boxwidths = np.array((math.ceil(positions.max()),) * space)
-    ndims = (NDIM,) * space
-    normalize_position(positions, boxwidths, ndims)
-    density = cic(positions, ndims)
-    normalize_density(density, boxwidths/ndims, MPART)
-    plot_density(density)
+    return positions
+
+def calculate_params(points, ndim=NDIM):
+    space = points.shape[1]
+    boxwidths = np.array((math.ceil(points.max()),) * space)
+    ndims = (ndim,) * space
+    return points, boxwidths, ndims
+
+def run_cic(points, boxwidths, ndims, mpart=MPART):
+    normalize_position(points, boxwidths, ndims)
+    density = cic(points, ndims)
+    normalize_density(density, boxwidths/ndims, mpart)
+    return density
+
+if __name__ == "__main__":
+    pass
 
