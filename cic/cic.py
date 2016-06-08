@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 import readsnapshots.readsnapHDF5 as rs
+import h5py
 
 # Width of simulation box
 BOXWIDTH = 25.0 # Mpc
@@ -84,6 +85,15 @@ def plot_density(density, points=None):
     plt.ylim(1,ylim - 1)
     plt.show()
 
+def write_density(density, filename):
+    with h5py.File(filename, "w") as f:
+        density_dset = f.create_dataset("DENSITY", density.shape, dtype=density.dtype)
+        density_dset[...] = density
+
+def read_density(filename):
+    with h5py.File(filename, "r") as f:
+        return f["DENSITY"][()]
+
 def random_data_demo():
     points = np.random.random_sample((NPART,SPACE)) * NDIM
     density = cic(points, NDIMS)
@@ -100,7 +110,7 @@ def calculate_params(points, ndim=NDIM):
     return points, boxwidths, ndims
 
 def run_cic(points, boxwidths, ndims, mpart=MPART):
-    normalize_position(points, boxwidths, ndims)
+    points = normalize_position(points, boxwidths, ndims)
     density = cic(points, ndims)
     normalize_density(density, boxwidths/ndims, mpart)
     return density
