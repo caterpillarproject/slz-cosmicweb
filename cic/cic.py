@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 from __future__ import division, print_function
+#import pyximport; pyximport.install()
+#import cycic
 import math
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +13,7 @@ import h5py
 # Width of simulation box
 BOXWIDTH = 25.0 # Mpc
 # Number of cells
-NDIM = 512
+NDIM = 256
 CELLWIDTH = BOXWIDTH / NDIM
 # Spatial dimensions
 SPACE = 3
@@ -106,11 +108,11 @@ def read_position_data():
 def calculate_params(points, ndim=NDIM):
     space = points.shape[1]
     boxwidths = np.array((math.ceil(points.max()),) * space)
-    ndims = (ndim,) * space
+    ndims = np.array((ndim,) * space)
+    points = normalize_position(points, boxwidths, ndims)
     return points, boxwidths, ndims
 
 def run_cic(points, boxwidths, ndims, mpart=MPART):
-    points = normalize_position(points, boxwidths, ndims)
     density = cic(points, ndims)
     normalize_density(density, boxwidths/ndims, mpart)
     return density
