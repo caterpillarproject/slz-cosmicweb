@@ -1,4 +1,3 @@
-%%cython -a
 from __future__ import division, print_function
 import math
 import numpy as np
@@ -43,13 +42,14 @@ def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims):
     cic_sanitize(points, ndims)
     if ndims.shape[0] != 3:
         raise ValueError("Argument `ndims` must be of shape (3,).")
+    cdef UINT_t space = ndims.shape[0]
 
     # Pre-allocate variables to be used in the main loop
     # ndensity has shape ndims + 2 in case points are within 0.5 of the box edge.
     ndensity = np.zeros(ndims + 2, dtype=FLOAT)
     cdef FLOAT_t[:, :, :] ndensity_view = ndensity
-    cdef UINT_t[:] cell = np.zeros(3, dtype=UINT)
-    cdef FLOAT_t[:, :] delta = np.zeros((2,3), dtype=FLOAT)
+    cdef UINT_t[:] cell = np.zeros(space, dtype=UINT)
+    cdef FLOAT_t[:, :] delta = np.zeros((2, space), dtype=FLOAT)
     cdef FLOAT_t celldelta = 0
     cdef UINT_t i, j, k
     cdef size_t n
@@ -57,7 +57,7 @@ def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims):
     # Loop over the number of points
     for n in range(points.shape[0]):
         # Loop over each dimension of each point
-        for i in range(3):
+        for i in range(space):
             cell[i] = <UINT_t>(points[n, i] + 0.5)
             celldelta = cell[i] - points[n, i]
             delta[0, i] = 0.5 + celldelta
@@ -66,12 +66,12 @@ def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims):
         for i in range(2):
             for j in range(2):
                 for k in range(2):
-                    ndensity_view[<UINT_t>(cell[0]+i), <UINT_t>(cell[1]+j), <UINT_t>(cell[2]+k)] += delta[i,0] * delta[j,1] * delta[k,2]
+                    ndensity_view[cell[0]+i, cell[1]+j, cell[2]+k] += delta[i,0] * delta[j,1] * delta[k,2]
     return ndensity
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-cdef int cic_sanitize(FLOAT_t[:,:] points, INT_t[:] ndims):
+cpdef int cic_sanitize(FLOAT_t[:,:] points, INT_t[:] ndims):
     """Checks inputs to cloud-in-cell functions for sanity.
 
     Parameters
