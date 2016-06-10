@@ -13,7 +13,7 @@ import h5py
 # Width of simulation box
 BOXWIDTH = 25.0 # Mpc
 # Number of cells
-NDIM = 256
+NDIM = 512
 CELLWIDTH = BOXWIDTH / NDIM
 # Spatial dimensions
 SPACE = 3
@@ -76,7 +76,7 @@ def plot_density(density, points=None):
     else:
         raise ValueError("2D or above density only")
     plt.figure()
-    plt.pcolor(image_array_2d_mesh.T, cmap=plt.cm.jet)
+    plt.pcolormesh(image_array_2d_mesh.T, cmap=plt.cm.cubehelix)
     plt.colorbar()
     if points != None:
         assert points.shape[1] == density.ndim
