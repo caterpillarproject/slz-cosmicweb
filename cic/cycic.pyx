@@ -14,7 +14,7 @@ ctypedef np.uint_t UINT_t
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims):
+def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims, np.ndarray[INT_t, ndim=1] weights=np.array((-1,))):
     """ A Cython-based 3D cloud-in-cell algorithm.
 
     Parameters
@@ -23,6 +23,8 @@ def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims):
         Must be non-negative. `points.shape[1]` must be 3.
     ndims : np.ndarray[FLOAT_t, ndim=2]
         Desired number of cells per dimension. Must have length 3.
+    weights : np.ndarray[FLOAT_t, ndim=1], optional
+        Weight for each point. There must be a weight for each point.
 
     Returns
     -------
@@ -42,7 +44,12 @@ def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims):
     cic_sanitize(points, ndims)
     if ndims.shape[0] != 3:
         raise ValueError("Argument `ndims` must be of shape (3,).")
-    cdef UINT_t space = ndims.shape[0]
+    cdef UINT_t space = 3
+    cdef FLOAT_t[:] weights_view
+    if weights[0] < 0:
+        weights_view = np.ones(points.shape[0])
+    else:
+        weights_view = weights
 
     # Pre-allocate variables to be used in the main loop
     # ndensity has shape ndims + 2 in case points are within 0.5 of the box edge.
@@ -66,7 +73,7 @@ def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims):
         for i in range(2):
             for j in range(2):
                 for k in range(2):
-                    ndensity_view[cell[0]+i, cell[1]+j, cell[2]+k] += delta[i,0] * delta[j,1] * delta[k,2]
+                    ndensity_view[cell[0]+i, cell[1]+j, cell[2]+k] += delta[i,0] * delta[j,1] * delta[k,2] * weights_view[n]
     return ndensity
 
 @cython.wraparound(False)
