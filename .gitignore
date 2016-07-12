@@ -1,0 +1,14 @@
+# Python
+*.pyc
+
+# Cython
+*.so
+*.html
+
+# IPython
+**/.ipynb_checkpoints/**
+
+# Vim
+*.swp
+*.un~
+*~
