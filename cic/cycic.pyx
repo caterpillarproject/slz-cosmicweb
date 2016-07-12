@@ -101,19 +101,15 @@ cpdef int cic_sanitize(FLOAT_t[:,:] points, INT_t[:] ndims):
     """
     if points.shape[1] != ndims.shape[0]:
         raise ValueError("Dimension mismatch between arguements `points` and `ndims`.")
-        return False
 
     cdef size_t i, j
     for i in range(ndims.shape[0]):
         if ndims[i] <= 0:
             raise ValueError("Argument `ndims` must be positive.")
-            return False
     for i in range(points.shape[0]):
         for j in range(points.shape[1]):
             if points[i,j] > ndims[j]:
                 raise ValueError("Argument `ndims` too small for the range of `points`")
-                return False
             elif points[i,j] < 0:
                 raise ValueError("Argument `points` must be non-negative.")
-                return False
     return True
