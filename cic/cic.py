@@ -13,7 +13,7 @@ import h5py
 # Width of simulation box
 BOXWIDTH = 25.0 # Mpc
 # Number of cells
-NDIM = 512
+NDIM = 128
 CELLWIDTH = BOXWIDTH / NDIM
 # Spatial dimensions
 SPACE = 3
