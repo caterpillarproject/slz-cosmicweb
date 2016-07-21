@@ -1,20 +1,20 @@
 from __future__ import division, print_function
 import math
 import numpy as np
-cimport numpy as np
+cimport numpy as cnp
 cimport cython
 
 # Define types to be used as array dtypes
 FLOAT = np.float
 INT = np.int_
 UINT = np.uint
-ctypedef np.float_t FLOAT_t
-ctypedef np.int_t INT_t
-ctypedef np.uint_t UINT_t
+ctypedef cnp.float_t FLOAT_t
+ctypedef cnp.int_t INT_t
+ctypedef cnp.uint_t UINT_t
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims, np.ndarray[INT_t, ndim=1] weights=np.array((-1,))):
+def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims, np.ndarray[FLOAT_t] weights=np.array((-1.,))):
     """ A Cython-based 3D cloud-in-cell algorithm.
 
     Parameters
@@ -45,6 +45,8 @@ def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims, 
     if ndims.shape[0] != 3:
         raise ValueError("Argument `ndims` must be of shape (3,).")
     cdef UINT_t space = 3
+    # TODO: Check weights sanity: non-negative & share shape[0] with points
+    # TODO: Allow weights to be 2 dimensional
     cdef FLOAT_t[:] weights_view
     if weights[0] < 0:
         weights_view = np.ones(points.shape[0])
