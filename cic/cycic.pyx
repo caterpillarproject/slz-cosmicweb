@@ -14,7 +14,7 @@ ctypedef cnp.uint_t UINT_t
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def cic_3d(np.ndarray[FLOAT_t, ndim=2] points, np.ndarray[INT_t, ndim=1] ndims, np.ndarray[FLOAT_t] weights=np.array((-1.,))):
+def cic_3d(cnp.ndarray[FLOAT_t, ndim=2] points, cnp.ndarray[INT_t, ndim=1] ndims, cnp.ndarray[FLOAT_t] weights=np.array((-1.,))):
     """ A Cython-based 3D cloud-in-cell algorithm.
 
     Parameters
