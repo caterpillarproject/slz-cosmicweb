@@ -76,7 +76,7 @@ def plot_density(density, points=None):
     else:
         raise ValueError("2D or above density only")
     plt.figure()
-    plt.pcolormesh(image_array_2d_mesh.T, cmap=plt.cm.cubehelix)
+    plt.pcolor(image_array_2d_mesh.T, cmap=plt.cm.cubehelix)
     plt.colorbar()
     if points != None:
         assert points.shape[1] == density.ndim
@@ -85,6 +85,7 @@ def plot_density(density, points=None):
     xlim, ylim = image_array_2d_mesh.shape
     plt.xlim(1,xlim - 1)
     plt.ylim(1,ylim - 1)
+    plt.savefig("plot.png")
     plt.show()
 
 def write_density(density, filename):
@@ -101,9 +102,13 @@ def random_data_demo():
     density = cic(points, NDIMS)
     plot_density(density, points)
 
-def read_position_data():
-    positions = rs.read_block(SNAPPREFIX, "POS ", parttype=1)
+def read_position_data(prefix):
+    positions = rs.read_block(prefix, "POS ", parttype=1)
     return positions
+
+def read_velocity_data(prefix):
+    velocity = rs.read_block(prefix, "VEL ", parttype=1)
+    return velocity
 
 def calculate_params(points, ndim=NDIM):
     space = points.shape[1]
