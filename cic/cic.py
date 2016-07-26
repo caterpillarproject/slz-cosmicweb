@@ -76,7 +76,7 @@ def plot_density(density, points=None):
     else:
         raise ValueError("2D or above density only")
     plt.figure()
-    plt.pcolor(image_array_2d_mesh.T, cmap=plt.cm.cubehelix)
+    plt.pcolormesh(image_array_2d_mesh.T, cmap=plt.cm.seismic)
     plt.colorbar()
     if points != None:
         assert points.shape[1] == density.ndim
