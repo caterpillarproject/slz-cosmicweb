@@ -14,7 +14,7 @@ ctypedef cnp.uint_t UINT_t
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-def cic_3d(FLOAT_t[:, :] points, INT_t[:] ndims, FLOAT_t[:, :] weights=None):
+cpdef cnp.ndarray[FLOAT_t, ndim=4] cic_3d(FLOAT_t[:, :] points, INT_t[:] ndims, FLOAT_t[:, :] weights=None):
     """ A Cython-based 3D cloud-in-cell algorithm.
 
     Parameters
@@ -51,7 +51,7 @@ def cic_3d(FLOAT_t[:, :] points, INT_t[:] ndims, FLOAT_t[:, :] weights=None):
 
     # Pre-allocate variables to be used in the main loop
     # ndensity has shape ndims + 2 in case points are within 0.5 of the box edge.
-    cdef FLOAT_t [:, :, :, :] ndensity = np.zeros((ndims[0]+2, ndims[1]+2, ndims[2]+2, weights.shape[1]), dtype=FLOAT)
+    cdef cnp.ndarray[FLOAT_t, ndim=4] ndensity = np.zeros((ndims[0]+2, ndims[1]+2, ndims[2]+2, weights.shape[1]), dtype=FLOAT)
     cdef UINT_t[:] cell = np.zeros(space, dtype=UINT)
     cdef FLOAT_t[:, :] delta = np.zeros((2, space), dtype=FLOAT)
     cdef FLOAT_t celldelta = 0
@@ -76,11 +76,19 @@ def cic_3d(FLOAT_t[:, :] points, INT_t[:] ndims, FLOAT_t[:, :] weights=None):
                     for w in range(weights.shape[1]):
                         ndensity[cell[0]+i, cell[1]+j, cell[2]+k, w] += cellvol * weights[n, w]
 
-    return np.asarray(ndensity)
+    return ndensity
 
 @cython.wraparound(False)
 @cython.boundscheck(False)
-cpdef int cic_sanitize(FLOAT_t[:,:] points, INT_t[:] ndims):
+cdef int wrap_periodic_3d(FLOAT_t[:, :, :] field):
+    for i in field.shape[0]:
+        for j in field.shape[1]:
+            for k in field.shape[2]:
+                pass
+
+@cython.wraparound(False)
+@cython.boundscheck(False)
+cpdef int cic_sanitize(FLOAT_t[:, :] points, INT_t[:] ndims):
     """Checks inputs to cloud-in-cell functions for sanity.
 
     Parameters
