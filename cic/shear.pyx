@@ -2,6 +2,7 @@ from __future__ import division, print_function
 import math
 import numpy as np
 import scipy.fftpack as fftpack
+import scipy.ndimage as ndimage
 cimport numpy as cnp
 cimport cython
 from libc.math cimport M_PI
@@ -131,3 +132,12 @@ def eig_shear_tensor(cnp.ndarray[FLOAT_t, ndim=5] jacobian):
         for y in range(y_len):
             for z in range(z_len):
                 pass
+
+def unpack_field(field):
+    return map(np.squeeze, np.split(field, field.shape[-1], field.ndim-1))
+
+def repack_field(fields, ndim):
+    return np.stack(fields, ndim)
+
+def gaussian_filter_field(field, *args, **kwargs):
+    return repack_field((ndimage.gaussian_filter(f, *args, **kwargs) for f in unpack_field(field)), field.ndim-1)
